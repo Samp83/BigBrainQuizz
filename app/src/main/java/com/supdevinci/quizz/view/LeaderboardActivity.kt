@@ -6,7 +6,7 @@ import android.widget.TextView
 import android.widget.LinearLayout
 import android.view.Gravity
 
-class SecondActivity : ComponentActivity() {
+class LeaderboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

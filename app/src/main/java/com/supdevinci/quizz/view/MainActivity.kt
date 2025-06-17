@@ -89,8 +89,10 @@ fun QuizContent(user: UserEntity, quizzViewModel: QuizzViewModel, userViewModel:
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var showResult by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        quizzViewModel.fetchQuestion()
+    LaunchedEffect(quizzViewModel.tokenReady.collectAsState().value) {
+        if (quizzViewModel.tokenReady.value) {
+            quizzViewModel.fetchQuestion()
+        }
     }
 
     Column(

@@ -15,20 +15,69 @@ class QuizzViewModel : ViewModel() {
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
+    private val _tokenReady = MutableStateFlow(false)
+    val tokenReady: StateFlow<Boolean> = _tokenReady
+
+    private var sessionToken: String? = null
+
+    init {
+        viewModelScope.launch {
+            try {
+                val tokenResponse = RetrofitInstance.api.requestToken()
+                if (tokenResponse.response_code == 0) {
+                    sessionToken = tokenResponse.token
+                    _tokenReady.value = true
+                } else {
+                    _error.value = "Erreur récupération token"
+                }
+            } catch (e: Exception) {
+                _error.value = "Erreur réseau token : ${e.message}"
+            }
+        }
+    }
+
 
     fun fetchQuestion() {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.api.getQuestion()
-                if (response.response_code == 0 && response.results.isNotEmpty()) {
-                    _question.value = response.results[0]
-                    _error.value = null
-                } else {
-                    _error.value = "Erreur : réponse invalide"
+                if (sessionToken == null) {
+                    _error.value = "Token non initialisé"
+                    return@launch
+                }
+
+                val response = RetrofitInstance.api.getQuestion(sessionToken!!)
+                when (response.response_code) {
+                    0 -> {
+                        if (response.results.isNotEmpty()) {
+                            _question.value = response.results[0]
+                            _error.value = null
+                        }
+                    }
+                    4 -> {
+                        // Token épuisé : on le réinitialise
+                        resetToken()
+                        fetchQuestion()
+                    }
+                    else -> {
+                        _error.value = "Erreur API: ${response.response_code}"
+                    }
                 }
             } catch (e: Exception) {
-                _error.value = "Erreur : ${e.message}"
+                _error.value = "Erreur réseau : ${e.message}"
             }
+        }
+    }
+
+    private suspend fun resetToken() {
+        try {
+            val resetResponse = RetrofitInstance.api.resetToken(sessionToken!!)
+            if (resetResponse.response_code == 0) {
+                _error.value = null
+            } else {
+                _error.value = "Erreur reset token"
+            }
+        } catch (e: Exception) {
+            _error.value = "Erreur réseau reset : ${e.message}"
         }
     }
 }
