@@ -5,12 +5,17 @@ import com.supdevinci.quizz.model.UserEntity
 
 @Dao
 interface UserDao {
-    @Query("SELECT * FROM user WHERE id = 1")
-    fun getUser(): UserEntity?
+    @Query("SELECT * FROM user WHERE id = :userId")
+    fun getUserById(userId: Int): UserEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrUpdate(user: UserEntity)
+    @Insert
+    fun insert(user: UserEntity): Long
 
-    @Query("UPDATE user SET score = score + 1 WHERE id = 1")
-    fun incrementScore()
+    @Query("UPDATE user SET score = score + 1 WHERE id = :userId")
+    fun incrementScore(userId: Int)
+
+    @Query("SELECT * FROM user ORDER BY score DESC")
+    fun getAllUsersSortedByScore(): kotlinx.coroutines.flow.Flow<List<UserEntity>>
+
 }
+

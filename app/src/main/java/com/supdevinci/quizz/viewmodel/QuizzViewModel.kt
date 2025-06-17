@@ -10,17 +10,20 @@ import kotlinx.coroutines.launch
 
 class QuizzViewModel : ViewModel() {
 
+    private var sessionToken: String? = null
+    private var currentCategoryId: Int? = null
+
     private val _question = MutableStateFlow<QuizzQuestion?>(null)
     val question: StateFlow<QuizzQuestion?> = _question
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
+
     private val _tokenReady = MutableStateFlow(false)
     val tokenReady: StateFlow<Boolean> = _tokenReady
 
-    private var sessionToken: String? = null
-
-    init {
+    fun initialize(categoryId: Int) {
+        currentCategoryId = categoryId
         viewModelScope.launch {
             try {
                 val tokenResponse = RetrofitInstance.api.requestToken()
@@ -36,16 +39,13 @@ class QuizzViewModel : ViewModel() {
         }
     }
 
-
     fun fetchQuestion() {
         viewModelScope.launch {
             try {
-                if (sessionToken == null) {
-                    _error.value = "Token non initialisé"
-                    return@launch
-                }
+                val token = sessionToken ?: return@launch
+                val categoryId = currentCategoryId ?: return@launch
 
-                val response = RetrofitInstance.api.getQuestion(sessionToken!!)
+                val response = RetrofitInstance.api.getQuestion(token, categoryId)
                 when (response.response_code) {
                     0 -> {
                         if (response.results.isNotEmpty()) {
@@ -54,7 +54,6 @@ class QuizzViewModel : ViewModel() {
                         }
                     }
                     4 -> {
-                        // Token épuisé : on le réinitialise
                         resetToken()
                         fetchQuestion()
                     }
@@ -71,9 +70,7 @@ class QuizzViewModel : ViewModel() {
     private suspend fun resetToken() {
         try {
             val resetResponse = RetrofitInstance.api.resetToken(sessionToken!!)
-            if (resetResponse.response_code == 0) {
-                _error.value = null
-            } else {
+            if (resetResponse.response_code != 0) {
                 _error.value = "Erreur reset token"
             }
         } catch (e: Exception) {

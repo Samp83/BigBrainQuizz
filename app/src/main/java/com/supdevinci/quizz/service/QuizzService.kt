@@ -6,8 +6,13 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface QuizzApi {
-    @GET("api.php?amount=1")
-    suspend fun getQuestion(@Query("token") token: String): QuizzResponse
+
+    @GET("api.php")
+    suspend fun getQuestion(
+        @Query("token") token: String,
+        @Query("category") categoryId: Int,
+        @Query("amount") amount: Int = 1
+    ): QuizzResponse
 
     @GET("api_token.php?command=request")
     suspend fun requestToken(): TokenResponse
@@ -15,3 +20,4 @@ interface QuizzApi {
     @GET("api_token.php?command=reset")
     suspend fun resetToken(@Query("token") token: String): TokenResponse
 }
+
