@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
@@ -24,7 +25,6 @@ import com.supdevinci.quizz.viewmodel.QuizzViewModel
 class QuizzActivity : ComponentActivity() {
 
     private val quizzViewModel: QuizzViewModel by viewModels()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,84 +72,93 @@ class QuizzActivity : ComponentActivity() {
                         Text("Error : $it", color = MaterialTheme.colorScheme.error)
                     }
 
-                    question?.let { q ->
-                        val answers = remember(q.question) { q.getShuffledAnswers() }
+                    AnimatedContent(
+                        targetState = question,
+                        transitionSpec = {
+                            slideInHorizontally { it } + fadeIn() togetherWith
+                                    slideOutHorizontally { -it } + fadeOut()
+                        },
+                        label = "QuestionTransition"
+                    ) { q ->
+                        q?.let {
+                            val answers = remember(q.question) { q.getShuffledAnswers() }
 
-                        Card(
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
-                                    q.question,
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                                Spacer(Modifier.height(12.dp))
-
-                                answers.forEach { answer ->
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .selectable(
-                                                selected = selectedAnswer == answer,
-                                                enabled = !isAnswerSubmitted,
-                                                onClick = {
-                                                    selectedAnswer = answer
-                                                    isAnswerSubmitted = true
-                                                    if (answer == q.correct_answer) {
-                                                        user?.let { quizzViewModel.incrementScore(it) }
-                                                    }
-                                                }
-                                            )
-                                            .padding(vertical = 4.dp)
-                                    ) {
-                                        RadioButton(
-                                            selected = selectedAnswer == answer,
-                                            onClick = null,
-                                            enabled = !isAnswerSubmitted
-                                        )
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(answer)
-                                    }
-                                }
-
-                                if (isAnswerSubmitted) {
-                                    val correct = selectedAnswer == q.correct_answer
-                                    Spacer(Modifier.height(12.dp))
+                            Card(
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        if (correct) "Correct answer !" else "Wrong answer !",
-                                        color = if (correct) Color.Green else Color.Red,
-                                        fontWeight = FontWeight.SemiBold
+                                        q.question,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyLarge
                                     )
-                                }
+                                    Spacer(Modifier.height(12.dp))
 
-                                Spacer(Modifier.height(16.dp))
+                                    answers.forEach { answer ->
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .selectable(
+                                                    selected = selectedAnswer == answer,
+                                                    enabled = !isAnswerSubmitted,
+                                                    onClick = {
+                                                        selectedAnswer = answer
+                                                        isAnswerSubmitted = true
+                                                        if (answer == q.correct_answer) {
+                                                            user?.let { quizzViewModel.incrementScore(it) }
+                                                        }
+                                                    }
+                                                )
+                                                .padding(vertical = 4.dp)
+                                        ) {
+                                            RadioButton(
+                                                selected = selectedAnswer == answer,
+                                                onClick = null,
+                                                enabled = !isAnswerSubmitted
+                                            )
+                                            Spacer(Modifier.width(8.dp))
+                                            Text(answer)
+                                        }
+                                    }
 
-                                Button(
-                                    onClick = {
-                                        selectedAnswer = null
-                                        isAnswerSubmitted = false
-                                        quizzViewModel.fetchQuestion()
-                                    },
-                                    modifier = Modifier.align(Alignment.End),
-                                    enabled = isAnswerSubmitted
-                                ) {
-                                    Text("Next question")
-                                }
+                                    if (isAnswerSubmitted) {
+                                        val correct = selectedAnswer == q.correct_answer
+                                        Spacer(Modifier.height(12.dp))
+                                        Text(
+                                            if (correct) "Correct answer !" else "Wrong answer !",
+                                            color = if (correct) Color.Green else Color.Red,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
 
-                                Spacer(Modifier.height(16.dp))
+                                    Spacer(Modifier.height(16.dp))
 
-                                Button(
-                                    onClick = {
-                                        context.startActivity(Intent(context, LeaderboardActivity::class.java))
-                                        (context as? ComponentActivity)?.finish()
-                                    },
-                                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
-                                ) {
-                                    Text("Finish and show leaderboard")
+                                    Button(
+                                        onClick = {
+                                            selectedAnswer = null
+                                            isAnswerSubmitted = false
+                                            quizzViewModel.fetchQuestion()
+                                        },
+                                        modifier = Modifier.align(Alignment.End),
+                                        enabled = isAnswerSubmitted
+                                    ) {
+                                        Text("Next question")
+                                    }
+
+                                    Spacer(Modifier.height(16.dp))
+
+                                    Button(
+                                        onClick = {
+                                            context.startActivity(Intent(context, LeaderboardActivity::class.java))
+                                            (context as? ComponentActivity)?.finish()
+                                        },
+                                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                                    ) {
+                                        Text("Finish and show leaderboard")
+                                    }
                                 }
                             }
                         }
