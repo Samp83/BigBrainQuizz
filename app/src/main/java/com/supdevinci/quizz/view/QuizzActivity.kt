@@ -18,9 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.supdevinci.quizz.model.User
 import com.supdevinci.quizz.ui.theme.QuizzTheme
 import com.supdevinci.quizz.viewmodel.QuizzViewModel
+import kotlinx.coroutines.delay
 
 class QuizzActivity : ComponentActivity() {
 
@@ -47,9 +47,33 @@ class QuizzActivity : ComponentActivity() {
 
                 var selectedAnswer by remember { mutableStateOf<String?>(null) }
                 var isAnswerSubmitted by remember { mutableStateOf(false) }
+                var timeLeft by remember { mutableStateOf(30) }
+                var timerActive by remember { mutableStateOf(false) }
 
                 LaunchedEffect(tokenReady) {
                     if (tokenReady) quizzViewModel.fetchQuestion()
+                }
+
+                LaunchedEffect(question) {
+                    if (question != null) {
+                        timeLeft = 15
+                        timerActive = true
+                        isAnswerSubmitted = false
+                        selectedAnswer = null
+                    }
+                }
+
+                LaunchedEffect(timerActive, isAnswerSubmitted) {
+                    if (timerActive && !isAnswerSubmitted) {
+                        while (timeLeft > 0) {
+                            delay(1000)
+                            timeLeft--
+                        }
+                        if (!isAnswerSubmitted) {
+                            isAnswerSubmitted = true
+                            timerActive = false
+                        }
+                    }
                 }
 
                 Column(
@@ -95,6 +119,17 @@ class QuizzActivity : ComponentActivity() {
                                     )
                                     Spacer(Modifier.height(12.dp))
 
+                                    LinearProgressIndicator(
+                                        progress = { timeLeft / 30f },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(8.dp)
+                                            .padding(vertical = 8.dp),
+                                        color = if (timeLeft <= 5) Color.Red else MaterialTheme.colorScheme.primary,
+                                    )
+                                    Text("Time left: $timeLeft seconds", fontWeight = FontWeight.Medium)
+                                    Spacer(Modifier.height(12.dp))
+
                                     answers.forEach { answer ->
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
@@ -106,6 +141,7 @@ class QuizzActivity : ComponentActivity() {
                                                     onClick = {
                                                         selectedAnswer = answer
                                                         isAnswerSubmitted = true
+                                                        timerActive = false
                                                         if (answer == q.correct_answer) {
                                                             user?.let { quizzViewModel.incrementScore(it) }
                                                         }
@@ -127,7 +163,7 @@ class QuizzActivity : ComponentActivity() {
                                         val correct = selectedAnswer == q.correct_answer
                                         Spacer(Modifier.height(12.dp))
                                         Text(
-                                            if (correct) "Correct answer !" else "Wrong answer !",
+                                            if (selectedAnswer == null) "Time's up!" else if (correct) "Correct answer !" else "Wrong answer !",
                                             color = if (correct) Color.Green else Color.Red,
                                             fontWeight = FontWeight.SemiBold
                                         )
@@ -139,6 +175,7 @@ class QuizzActivity : ComponentActivity() {
                                         onClick = {
                                             selectedAnswer = null
                                             isAnswerSubmitted = false
+                                            timerActive = false
                                             quizzViewModel.fetchQuestion()
                                         },
                                         modifier = Modifier.align(Alignment.End),
