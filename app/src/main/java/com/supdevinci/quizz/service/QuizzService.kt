@@ -11,7 +11,8 @@ interface QuizzApi {
     suspend fun getQuestion(
         @Query("token") token: String,
         @Query("category") categoryId: Int,
-        @Query("amount") amount: Int = 1
+        @Query("amount") amount: Int = 1,
+        @Query("encode") encode: String = "base64"
     ): QuizzResponse
 
     @GET("api_token.php?command=request")

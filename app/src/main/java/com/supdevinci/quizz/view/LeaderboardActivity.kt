@@ -14,13 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.supdevinci.quizz.model.UserEntity
 import com.supdevinci.quizz.ui.theme.QuizzTheme
-import com.supdevinci.quizz.viewmodel.AuthViewModel
 import com.supdevinci.quizz.viewmodel.LeaderboardViewModel
 
 class LeaderboardActivity : ComponentActivity() {
 
     private val leaderboardViewModel: LeaderboardViewModel by viewModels()
-    private val authViewModel: AuthViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,14 +31,14 @@ class LeaderboardActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("Classement") },
+                            title = { Text("Leaderboard") },
                             actions = {
                                 TextButton(onClick = {
-                                    authViewModel.logout()
+                                    leaderboardViewModel.logout()
                                     startActivity(Intent(this@LeaderboardActivity, HomeActivity::class.java))
                                     finish()
                                 }) {
-                                    Text("Déconnexion")
+                                    Text("Disconnect")
                                 }
                             }
                         )

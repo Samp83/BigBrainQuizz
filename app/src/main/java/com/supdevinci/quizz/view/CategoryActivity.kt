@@ -32,7 +32,7 @@ class CategoryActivity : ComponentActivity() {
                     .fillMaxSize()
                     .padding(16.dp)) {
 
-                    Text("Choisissez une catégorie", style = MaterialTheme.typography.titleLarge)
+                    Text("Choose a category", style = MaterialTheme.typography.titleLarge)
 
                     Spacer(Modifier.height(16.dp))
 

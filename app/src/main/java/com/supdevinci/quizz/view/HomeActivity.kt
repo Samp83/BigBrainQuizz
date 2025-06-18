@@ -40,14 +40,14 @@ class HomeActivity : ComponentActivity() {
                             .padding(16.dp),
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text("Bienvenue", style = MaterialTheme.typography.headlineMedium)
+                        Text("Welcome", style = MaterialTheme.typography.headlineMedium)
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         TextField(
                             value = firstname,
                             onValueChange = { firstname = it },
-                            label = { Text("Prénom") },
+                            label = { Text("Firstname") },
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -56,7 +56,7 @@ class HomeActivity : ComponentActivity() {
                         TextField(
                             value = lastname,
                             onValueChange = { lastname = it },
-                            label = { Text("Nom") },
+                            label = { Text("Lastname") },
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -70,7 +70,7 @@ class HomeActivity : ComponentActivity() {
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Commencer le quiz")
+                            Text("Start quizz")
                         }
                     }
                 }

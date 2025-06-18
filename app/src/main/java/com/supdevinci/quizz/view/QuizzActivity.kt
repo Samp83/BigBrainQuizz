@@ -19,19 +19,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.supdevinci.quizz.model.User
 import com.supdevinci.quizz.ui.theme.QuizzTheme
-import com.supdevinci.quizz.viewmodel.AuthViewModel
 import com.supdevinci.quizz.viewmodel.QuizzViewModel
 
 class QuizzActivity : ComponentActivity() {
 
     private val quizzViewModel: QuizzViewModel by viewModels()
-    private val authViewModel: AuthViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val categoryId = intent.getIntExtra("categoryId", -1)
-        val categoryName = intent.getStringExtra("categoryName") ?: "Inconnue"
+        val categoryName = intent.getStringExtra("categoryName") ?: "Unknown"
 
         if (categoryId != -1) {
             quizzViewModel.initialize(categoryId)
@@ -39,7 +38,7 @@ class QuizzActivity : ComponentActivity() {
 
         setContent {
             QuizzTheme {
-                val user by authViewModel.currentUser.collectAsState()
+                val user by quizzViewModel.currentUser.collectAsState()
                 val question by quizzViewModel.question.collectAsState()
                 val error by quizzViewModel.error.collectAsState()
                 val tokenReady by quizzViewModel.tokenReady.collectAsState()
@@ -59,18 +58,18 @@ class QuizzActivity : ComponentActivity() {
                         .background(Color(0xFFEFEFEF))
                         .padding(16.dp)
                 ) {
-                    Text("Catégorie : $categoryName", style = MaterialTheme.typography.titleLarge)
+                    Text("Category : $categoryName", style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(8.dp))
 
                     user?.let {
-                        Text("Joueur : ${it.firstname} ${it.lastname}")
+                        Text("Player : ${it.firstname} ${it.lastname}")
                         Text("Score : ${it.score}")
                     }
 
                     Spacer(Modifier.height(16.dp))
 
                     error?.let {
-                        Text("Erreur : $it", color = MaterialTheme.colorScheme.error)
+                        Text("Error : $it", color = MaterialTheme.colorScheme.error)
                     }
 
                     question?.let { q ->
@@ -100,7 +99,7 @@ class QuizzActivity : ComponentActivity() {
                                                     selectedAnswer = answer
                                                     isAnswerSubmitted = true
                                                     if (answer == q.correct_answer) {
-                                                        user?.let { authViewModel.incrementScore(it) }
+                                                        user?.let { quizzViewModel.incrementScore(it) }
                                                     }
                                                 }
                                             )
@@ -120,7 +119,7 @@ class QuizzActivity : ComponentActivity() {
                                     val correct = selectedAnswer == q.correct_answer
                                     Spacer(Modifier.height(12.dp))
                                     Text(
-                                        if (correct) "Bonne réponse !" else "Mauvaise réponse !",
+                                        if (correct) "Correct answer !" else "Wrong answer !",
                                         color = if (correct) Color.Green else Color.Red,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -137,7 +136,7 @@ class QuizzActivity : ComponentActivity() {
                                     modifier = Modifier.align(Alignment.End),
                                     enabled = isAnswerSubmitted
                                 ) {
-                                    Text("Question suivante")
+                                    Text("Next question")
                                 }
 
                                 Spacer(Modifier.height(16.dp))
@@ -150,7 +149,7 @@ class QuizzActivity : ComponentActivity() {
                                     modifier = Modifier.align(Alignment.CenterHorizontally),
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
                                 ) {
-                                    Text("Finir et voir le classement")
+                                    Text("Finish and show leaderboard")
                                 }
                             }
                         }

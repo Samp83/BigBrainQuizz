@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation("io.github.vinceglb:confettikit:0.4.0")
     kapt("androidx.room:room-compiler:2.5.2")
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
