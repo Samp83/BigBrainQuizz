@@ -49,6 +49,8 @@ class QuizzActivity : ComponentActivity() {
                 var isAnswerSubmitted by remember { mutableStateOf(false) }
                 var timeLeft by remember { mutableStateOf(30) }
                 var timerActive by remember { mutableStateOf(false) }
+                var canSkip by remember { mutableStateOf(false) }
+
 
                 LaunchedEffect(tokenReady) {
                     if (tokenReady) quizzViewModel.fetchQuestion()
@@ -60,8 +62,12 @@ class QuizzActivity : ComponentActivity() {
                         timerActive = true
                         isAnswerSubmitted = false
                         selectedAnswer = null
+                        canSkip = false
+                        delay(5000)
+                        canSkip = true
                     }
                 }
+
 
                 LaunchedEffect(timerActive, isAnswerSubmitted) {
                     if (timerActive && !isAnswerSubmitted) {
@@ -179,7 +185,7 @@ class QuizzActivity : ComponentActivity() {
                                             quizzViewModel.fetchQuestion()
                                         },
                                         modifier = Modifier.align(Alignment.End),
-                                        enabled = isAnswerSubmitted
+                                        enabled = isAnswerSubmitted && canSkip
                                     ) {
                                         Text("Next question")
                                     }
